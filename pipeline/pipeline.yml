@@ -1,3 +1,10 @@
+var_sources:
+  - name: vars
+    type: dummy
+    config:
+      vars:
+        kaniko-version: "v1.6.0-debug" # https://git.io/JOEAf
+
 resources:
   - name: source
     type: git
@@ -8,9 +15,33 @@ resources:
       git_crypt_key: ((pipeline.git-crypt-key))
     check_every: 24h
     webhook_token: ((pipeline.git-webhook-token))
+  - name: kaniko-executor-image
+    type: registry-image
+    source:
+      repository: gcr.io/kaniko-project/executor
+      tag: ((vars:kaniko-version))
+  - name: bundle-resource-image
+    type: registry-image
+    source:
+      repository: us-docker.pkg.dev/tools-275701/codebandits/bundle-resource
+      tag: latest
+      username: _json_key
+      password: ((pipeline.gcp-service-account-registry))
 jobs:
-  - name: build-resource
+  - name: bundle-resource
     serial: true
     plan:
-      - get: source
-        trigger: true
+      - in_parallel:
+          - get: source
+            trigger: true
+          - get: kaniko-executor-image
+      - task: build-bundle-resource-image
+        image: kaniko-executor-image
+        file: source/pipeline/tasks/build-image.yml
+        params:
+          context_path: bundle-resource
+        output_mapping:
+          image: bundle-resource-image
+      - put: bundle-resource-image
+        params:
+          image: bundle-resource-image/image.tar
