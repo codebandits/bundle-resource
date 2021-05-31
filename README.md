@@ -36,3 +36,21 @@ resources:
       username: ((registry-username))
       password: ((registry-password))
 ```
+
+## CI/CD Pipeline [![CI/CD Pipeline](https://ci.distro.beer/api/v1/teams/codebandits/pipelines/bundle-resource/badge)](https://ci.distro.beer/teams/codebandits/pipelines/bundle-resource)
+
+https://ci.distro.beer/teams/codebandits/pipelines/bundle-resource
+
+Set the pipeline:
+
+```
+fly --target codebandits login --team-name codebandits --concourse-url https://ci.distro.beer
+fly --target codebandits set-pipeline --pipeline bundle-resource --config pipeline/pipeline.yml
+```
+
+Set the pipeline secrets:
+
+```
+cd pipeline
+./apply-pipeline-secrets.sh
+```

@@ -1,0 +1,16 @@
+resources:
+  - name: source
+    type: git
+    source:
+      branch: ((pipeline.git-branch))
+      private_key: ((pipeline.git-private-key))
+      uri: ((pipeline.git-repository))
+      git_crypt_key: ((pipeline.git-crypt-key))
+    check_every: 24h
+    webhook_token: ((pipeline.git-webhook-token))
+jobs:
+  - name: build-resource
+    serial: true
+    plan:
+      - get: source
+        trigger: true
